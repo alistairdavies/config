@@ -59,8 +59,5 @@ lspconfig.jedi_language_server.setup {
 require('lspconfig').pyright.setup{
   on_attach = on_attach,
   settings = {
-    python = {
-      venvPath = ".venv"
-    }
   }
 }
