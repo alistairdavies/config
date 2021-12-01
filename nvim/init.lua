@@ -49,6 +49,14 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_set_keymap('n', '<Leader><C-k>', ':lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
 end
 
+local on_attach = function(client, bufnr)
+  vim.api.nvim_set_keymap('n', '<Leader>gd', ':lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<Leader>gh', ':lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<Leader><C-k>', ':lua vim.lsp.buf.signature_help()<CR>', { noremap = true, silent = true })
+
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+end
+
 
 vim.api.nvim_command("colorscheme doubletrouble")
 
