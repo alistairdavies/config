@@ -57,7 +57,7 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_set_keymap('n', '<Leader><C-k>', ':lua vim.lsp.buf.signature_help()<CR>', opts)
 end
 
--- Map jk to esc, courtesy of James
+-- Map JK to escape :shrug:
 vim.api.nvim_set_keymap('i', 'jk', '<Esc>', { noremap = true })
 
 vim.api.nvim_command("colorscheme doubletrouble")
@@ -85,10 +85,18 @@ local ok, lspconfig = pcall(require, "lspconfig")
   --  }
   --}
 
-  -- jedi: pipx install jedi-language-server
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+capabilities.textDocument.completion.completionItem.snippetSupport = true
 
+-- CSS
+-- npm i -g vscode-langservers-extracted
+lspconfig.cssls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+
+-- jedi: pipx install jedi-language-server
 lspconfig.jedi_language_server.setup {
   on_attach = on_attach,
   capabilities = capabilities,
