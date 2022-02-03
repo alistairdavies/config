@@ -49,6 +49,7 @@ vim.api.nvim_set_keymap('n', '<Leader>fh', ':Telescope help_tags<CR>', { noremap
 vim.api.nvim_set_keymap('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.api.nvim_set_keymap('n', '<Leader>ts', ':TestSuite<CR>', opts)
 vim.api.nvim_set_keymap('n', '<Leader>m', ':lua vim.lsp.buf.formatting()<CR>")', opts)
+vim.api.nvim_set_keymap('n', '<Leader>l', ':TroubleToggle<CR>")', opts)
 
 local on_attach = function(client, bufnr)
   vim.api.nvim_set_keymap('n', '<Leader>gd', ':lua vim.lsp.buf.definition()<CR>', opts)
@@ -65,7 +66,8 @@ vim.api.nvim_command("colorscheme doubletrouble")
 vim.g['test#python#runner'] = 'pytest'
 
 -- Telescope file browser
-require("telescope").load_extension "file_browser"
+local telescope = require("telescope")
+telescope.load_extension "file_browser"
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
@@ -102,8 +104,8 @@ ls.setup({
     ls.builtins.formatting.isort,
     ls.builtins.formatting.prettier,
   },
-
 })
+
 
 -- Trouble
 require('trouble').setup{}
