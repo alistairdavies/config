@@ -74,26 +74,34 @@ telescope.load_extension "file_browser"
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+
 -- Rust. brew install rust_analyzer
 lspconfig.rust_analyzer.setup{}
 
 -- C and C++ lsp. brew install llvm
 -- lspconfig.clangd.setup{}
 
--- Python lsp.
-  -- pyright: npm install -g pyright
-  -- lspconfig.pyright.setup{
-  --  on_attach = on_attach,
-  --  settings = {
-  --    python = {
-  --      venvPath = ".venv"
-  --    }
-  --  }
-  --}
+-- Python.
+-- pyright: npm install -g pyright
+-- lspconfig.pyright.setup{
+--  on_attach = on_attach,
+--  settings = {
+--    python = {
+--      venvPath = ".venv"
+--    }
+--  }
+--}
 
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
-capabilities.textDocument.completion.completionItem.snippetSupport = true
+-- jedi: pipx install jedi-language-server
+lspconfig.jedi_language_server.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+
 
 -- CSS
 -- npm i -g vscode-langservers-extracted
@@ -102,11 +110,6 @@ lspconfig.cssls.setup {
   capabilities = capabilities,
 }
 
--- jedi: pipx install jedi-language-server
-lspconfig.jedi_language_server.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
 
 -- null-ls
 local ls = require('null-ls')
