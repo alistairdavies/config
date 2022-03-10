@@ -51,6 +51,9 @@ vim.api.nvim_set_keymap('n', '<Leader>ts', ':TestSuite<CR>', opts)
 vim.api.nvim_set_keymap('n', '<Leader>m', ':lua vim.lsp.buf.formatting()<CR>")', opts)
 vim.api.nvim_set_keymap('n', '<Leader>l', ':TroubleToggle<CR>")', opts)
 
+vim.api.nvim_set_keymap('n', '<Leader>ct', ':cargo test<CR>")', opts)
+vim.api.nvim_set_keymap('n', '<Leader>cc', ':cargo check<CR>")', opts)
+
 local on_attach = function(client, bufnr)
   vim.api.nvim_set_keymap('n', '<Leader>gd', ':lua vim.lsp.buf.definition()<CR>', opts)
   vim.api.nvim_set_keymap('n', '<Leader>gh', ':lua vim.lsp.buf.hover()<CR>', opts)
@@ -70,6 +73,9 @@ local telescope = require("telescope")
 telescope.load_extension "file_browser"
 
 local ok, lspconfig = pcall(require, "lspconfig")
+
+-- Rust. brew install rust_analyzer
+lspconfig.rust_analyzer.setup{}
 
 -- C and C++ lsp. brew install llvm
 -- lspconfig.clangd.setup{}
