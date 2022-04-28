@@ -24,6 +24,7 @@ Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-file-browser.nvim'
+Plug 'muchzill4/telescope-yacp.nvim'
 Plug 'Vimjas/vim-python-pep8-indent'
 Plug 'janko-m/vim-test'
 Plug 'muchzill4/doubletrouble'
@@ -46,6 +47,7 @@ vim.api.nvim_set_keymap('n', '<Leader>fg', ':Telescope live_grep<CR>', { noremap
 vim.api.nvim_set_keymap('n', '<Leader>fb', ':Telescope buffers<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<Leader>fd', ':Telescope file_browser<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<Leader>fh', ':Telescope help_tags<CR>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<Leader>p', ':Telescope yacp<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.api.nvim_set_keymap('n', '<Leader>ts', ':TestSuite<CR>', opts)
 vim.api.nvim_set_keymap('n', '<Leader>m', ':lua vim.lsp.buf.formatting()<CR>")', opts)
@@ -60,9 +62,6 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_set_keymap('n', '<Leader><C-k>', ':lua vim.lsp.buf.signature_help()<CR>', opts)
 end
 
--- Map JK to escape :shrug:
-vim.api.nvim_set_keymap('i', 'jk', '<Esc>', { noremap = true })
-
 vim.api.nvim_command("colorscheme doubletrouble")
 
 -- janko-m/vimtest
@@ -71,6 +70,19 @@ vim.g['test#python#runner'] = 'pytest'
 -- Telescope file browser
 local telescope = require("telescope")
 telescope.load_extension "file_browser"
+
+-- Command Line Palette
+telescope.load_extension "yacp"
+
+telescope.setup {
+  extensions = {
+    yacp = {
+      palette = {
+         { name = "pre-commit", cmd = "!pre-commit run --all-files"},
+      }
+    }
+  }
+}
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
