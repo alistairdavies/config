@@ -72,17 +72,21 @@ local telescope = require("telescope")
 telescope.load_extension "file_browser"
 
 -- Command Line Palette
-telescope.load_extension "yacp"
-
 telescope.setup {
   extensions = {
     yacp = {
       palette = {
-         { name = "pre-commit", cmd = "!pre-commit run --all-files"},
+         { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
+         { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
+         { name = "new tab", cmd = ":tabnew"},
+
       }
     }
   }
 }
+
+telescope.load_extension "yacp"
+
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
