@@ -12,7 +12,8 @@ vim.opt.termguicolors = true
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
-vim.g.mapleader = ","
+vim.keymap.set("n", "<Space>", "<Nop>")
+vim.g.mapleader = " "
 
 vim.opt.wildignore = {"*/node_modules/*", "*/static/*", "*/tmp/*", "*/.mypy_cache/*"}
 
@@ -59,8 +60,6 @@ vim.keymap.set('n', '<Leader>we', ':TroubleToggle<CR>', opts)
 vim.keymap.set('n', '<Leader>ww', ':TroubleToggle workspace_diagnostics<CR>', opts)
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
 vim.keymap.set('n', '<Leader>s', ':w<CR>', { noremap = true })
-vim.keymap.set('n', ',', '\\', { noremap = true })
-vim.keymap.set('n', '\\', ',', { noremap = true })
 
 
 local on_attach = function(client, bufnr)
