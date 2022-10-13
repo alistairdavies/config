@@ -11,6 +11,7 @@ vim.opt.clipboard = "unnamed"
 vim.opt.termguicolors = true
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
+vim.opt.breakindent = true
 
 vim.keymap.set("n", "<Space>", "<Nop>")
 vim.g.mapleader = " "
@@ -35,6 +36,7 @@ Plug 'janko-m/vim-test'
 Plug 'muchzill4/doubletrouble'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'jose-elias-alvarez/null-ls.nvim'
@@ -43,29 +45,34 @@ Plug 'kyazdani42/nvim-web-devicons'
 
 vim.call('plug#end')
 
+function format()
+  vim.lsp.buf.format {async = true}
+end
 
 local opts = {noremap=true, silent=true}
 
 vim.keymap.set('n', '<Leader>ff', ':Telescope find_files<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fg', ':Telescope live_grep<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fb', ':Telescope buffers<CR>', { noremap = true })
+vim.keymap.set('n', '<leader>fr', ':Telescope oldfiles<CR>', { noremap = true})
 vim.keymap.set('n', '<Leader>fd', ':Telescope file_browser<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fh', ':Telescope help_tags<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>pp', ':Telescope yacp<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>pr', ':Telescope yacp replay<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.keymap.set('n', '<Leader>ts', ':TestSuite<CR>', opts)
-vim.keymap.set('n', '<Leader>m', ':lua vim.lsp.buf.formatting()<CR>")', opts)
+vim.keymap.set('n', '<Leader>m', ':lua format()<CR>")', opts)
 vim.keymap.set('n', '<Leader>we', ':TroubleToggle<CR>', opts)
 vim.keymap.set('n', '<Leader>ww', ':TroubleToggle workspace_diagnostics<CR>', opts)
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
 vim.keymap.set('n', '<Leader>s', ':w<CR>', { noremap = true })
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
 
 
 local on_attach = function(client, bufnr)
   vim.keymap.set('n', '<Leader>gd', ':lua vim.lsp.buf.definition()<CR>', opts)
   vim.keymap.set('n', '<Leader>gh', ':lua vim.lsp.buf.hover()<CR>', opts)
-  vim.keymap.set('n', '<Leader>gg', ':TroubleToggle lsp_references<CR>")', opts)
+  vim.keymap.set('n', '<Leader>gr', ':TroubleToggle lsp_references<CR>")', opts)
 end
 
 vim.api.nvim_command("colorscheme doubletrouble")
@@ -82,6 +89,7 @@ vim.api.nvim_create_user_command(
 -- janko-m/vimtest
 vim.g['test#python#runner'] = 'pytest'
 
+
 -- Telescope file browser
 local telescope = require("telescope")
 telescope.load_extension "file_browser"
@@ -93,6 +101,7 @@ telescope.setup {
     yacp = {
       palette = {
          { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
+         { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
          { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
          { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
          { name = "new tab", cmd = ":tabnew"},
@@ -158,20 +167,30 @@ lspconfig.rust_analyzer.setup{}
 
 -- Python.
 -- pyright: npm install -g pyright
--- lspconfig.pyright.setup{
---  on_attach = on_attach,
---  settings = {
---    python = {
---      venvPath = ".venv"
---    }
---  }
---}
+lspconfig.pyright.setup{
+  capabilities = capabilities,
+  on_attach = on_attach,
+  settings = {
+    python = {
+      venvPath = ".venv"
+    }
+  }
+}
+
+
+-- Typescript
+-- npm install -g typescript typescript-language-server
+lspconfig.tsserver.setup{}
+
+
+-- Go. go install golang.org/x/tools/gopls@latest
+lspconfig.gopls.setup{}
 
 -- jedi: pipx install jedi-language-server
-lspconfig.jedi_language_server.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
+-- lspconfig.jedi_language_server.setup {
+-- on_attach = on_attach,
+--  capabilities = capabilities,
+--}
 
 
 -- CSS
@@ -209,6 +228,7 @@ cmp.setup{
     { name = 'nvim_lsp' },
     { name = 'buffer' },
     { name = 'vsnip' },
+    { name = 'nvim_lsp_signature_help' },
   }),
   mapping = {
     ["<C-d>"] = cmp.mapping.scroll_docs(-4),
