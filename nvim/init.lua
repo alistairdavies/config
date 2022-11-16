@@ -42,6 +42,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'jose-elias-alvarez/null-ls.nvim'
 Plug 'folke/trouble.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
+Plug 'github/copilot.vim'
 
 vim.call('plug#end')
 
@@ -118,7 +119,7 @@ telescope.load_extension "yacp"
 local ok, lspconfig = pcall(require, "lspconfig")
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 
