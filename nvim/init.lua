@@ -67,6 +67,7 @@ vim.keymap.set('n', '<Leader>ww', ':TroubleToggle workspace_diagnostics<CR>', op
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
 vim.keymap.set('n', '<Leader>s', ':w<CR>', { noremap = true })
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
+vim.keymap.set('n', '<C-p>', '<C-^>', { noremap = true })
 
 
 local on_attach = function(client, bufnr)
@@ -88,6 +89,7 @@ vim.api.nvim_create_user_command(
 
 -- janko-m/vimtest
 vim.g['test#python#runner'] = 'pytest'
+vim.g['test#go#runner'] = 'richgo'
 
 
 -- Telescope file browser
@@ -105,6 +107,7 @@ telescope.setup {
          { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
          { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
          { name = "new tab", cmd = ":tabnew"},
+         { name = "set working dir to current file", cmd = ":cd %:p:h" }
       }
     }
   }
@@ -210,6 +213,8 @@ ls.setup({
     ls.builtins.formatting.black,
     ls.builtins.formatting.isort,
     ls.builtins.formatting.prettier,
+    ls.builtins.diagnostics.golangci_lint,
+    ls.builtins.diagnostics.write_good
   },
 })
 
