@@ -37,12 +37,11 @@ Plug 'muchzill4/doubletrouble'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
-Plug 'hrsh7th/cmp-vsnip'
-Plug 'hrsh7th/vim-vsnip'
 Plug 'jose-elias-alvarez/null-ls.nvim'
 Plug 'folke/trouble.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
-Plug 'github/copilot.vim'
+Plug 'dcampos/nvim-snippy'
+Plug 'dcampos/cmp-snippy'
 
 vim.call('plug#end')
 
@@ -62,6 +61,7 @@ vim.keymap.set('n', '<Leader>pp', ':Telescope yacp<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>pr', ':Telescope yacp replay<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.keymap.set('n', '<Leader>ts', ':TestSuite<CR>', opts)
+vim.keymap.set('n', '<Leader>tv', ':TestVisit<CR>', opts)
 vim.keymap.set('n', '<Leader>m', ':lua format()<CR>")', opts)
 vim.keymap.set('n', '<Leader>we', ':TroubleToggle<CR>', opts)
 vim.keymap.set('n', '<Leader>ww', ':TroubleToggle workspace_diagnostics<CR>', opts)
@@ -91,6 +91,7 @@ vim.api.nvim_create_user_command(
 -- janko-m/vimtest
 vim.g['test#python#runner'] = 'pytest'
 vim.g['test#go#runner'] = 'richgo'
+vim.g['test#strategy'] = 'neovim'
 
 
 -- Telescope file browser
@@ -163,14 +164,7 @@ if context then
 end
 
 
--- Rust. brew install rust-analyzer
-lspconfig.rust_analyzer.setup{}
-
--- C and C++ lsp. brew install llvm
--- lspconfig.clangd.setup{}
-
--- Python.
--- pyright: npm install -g pyright
+-- Python - pyright (npm install -g pyright)
 lspconfig.pyright.setup{
   capabilities = capabilities,
   on_attach = on_attach,
@@ -181,28 +175,18 @@ lspconfig.pyright.setup{
   }
 }
 
+-- CSS - cssls (npm i -g vscode-langservers-extracted)
+-- Go - gopls (go install golang.org/x/tools/gopls@latest)
+-- Typescript - tsserver - (npm install -g typescript typescript-language-server)
+-- Rust - rust_analyzer (brew install rust-analyzer)
 
--- Typescript
--- npm install -g typescript typescript-language-server
-lspconfig.tsserver.setup{}
-
-
--- Go. go install golang.org/x/tools/gopls@latest
-lspconfig.gopls.setup{}
-
--- jedi: pipx install jedi-language-server
--- lspconfig.jedi_language_server.setup {
--- on_attach = on_attach,
---  capabilities = capabilities,
---}
-
-
--- CSS
--- npm i -g vscode-langservers-extracted
-lspconfig.cssls.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
+local servers = {'cssls', 'gopls', 'tsserver', 'rust_analyzer'}
+for _, lsp in ipairs(servers) do
+  lspconfig[lsp].setup {
+    on_attach = on_attach,
+    capabilities = capabilities,
+  }
+end
 
 
 -- null-ls
@@ -219,6 +203,19 @@ ls.setup({
   },
 })
 
+-- Snippy
+local snippy = require('snippy')
+snippy.setup({
+    mappings = {
+        is = {
+            ['<Tab>'] = 'expand_or_advance',
+            ['<S-Tab>'] = 'previous',
+        },
+        nx = {
+            ['<leader>x'] = 'cut_text',
+        },
+    },
+})
 
 -- Trouble
 require('trouble').setup{}
@@ -227,13 +224,13 @@ local cmp = require'cmp'
 cmp.setup{
   snippet = {
     expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body)
+      snippy.expand_snippet(args.body)
     end,
   },
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
     { name = 'buffer' },
-    { name = 'vsnip' },
+    { name = 'snippy' },
     { name = 'nvim_lsp_signature_help' },
   }),
   mapping = {
@@ -245,5 +242,23 @@ cmp.setup{
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif snippy.can_expand_or_advance() then
+        snippy.expand_or_advance()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif snippy.can_jump(-1) then
+        snippy.previous()
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
   }
 }
