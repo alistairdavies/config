@@ -12,6 +12,7 @@ vim.opt.termguicolors = true
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.breakindent = true
+vim.opt.background = "light"
 
 vim.keymap.set("n", "<Space>", "<Nop>")
 vim.g.mapleader = " "
@@ -34,6 +35,7 @@ Plug 'muchzill4/telescope-yacp.nvim'
 Plug 'Vimjas/vim-python-pep8-indent'
 Plug 'janko-m/vim-test'
 Plug 'muchzill4/doubletrouble'
+Plug 'pappasam/papercolor-theme-slim'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
@@ -77,7 +79,10 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', '<Leader>gr', ':TroubleToggle lsp_references<CR>")', opts)
 end
 
-vim.api.nvim_command("colorscheme doubletrouble")
+
+-- Color Scheme
+-- vim.api.nvim_command("colorscheme doubletrouble")  
+vim.api.nvim_command("colorscheme PaperColorSlim")  
 
 vim.api.nvim_create_user_command(
     'Project',
