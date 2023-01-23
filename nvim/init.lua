@@ -1,51 +1,65 @@
 vim.opt.ruler = true
 vim.opt.hidden = true
 vim.opt.number = true
+vim.opt.relativenumber = true
 vim.opt.showcmd = true
 vim.opt.incsearch = true
-vim.opt.hlsearch = true
+vim.opt.hlsearch = false 
 vim.opt.mouse = "a"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.clipboard = "unnamed"
 vim.opt.termguicolors = true
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.breakindent = true
 vim.opt.background = "light"
-
+vim.opt.scrolloff = 8
+vim.opt.updatetime = 50
 vim.keymap.set("n", "<Space>", "<Nop>")
 vim.g.mapleader = " "
 
 vim.opt.wildignore = {"*/node_modules/*", "*/static/*", "*/tmp/*", "*/.mypy_cache/*"}
 
-local Plug = vim.fn['plug#']
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
 
+plugins = {
+  'neovim/nvim-lspconfig',
+  'nvim-treesitter/nvim-treesitter',
+  'nvim-treesitter/nvim-treesitter-context',
+  'nvim-treesitter/nvim-treesitter-textobjects',
+  'nvim-lua/plenary.nvim',
+  'nvim-telescope/telescope.nvim',
+  'nvim-telescope/telescope-file-browser.nvim',
+  'muchzill4/telescope-yacp.nvim',
+  'Vimjas/vim-python-pep8-indent',
+  'janko-m/vim-test',
+  'muchzill4/doubletrouble',
+  'pappasam/papercolor-theme-slim',
+  'hrsh7th/nvim-cmp',
+  'hrsh7th/cmp-nvim-lsp',
+  'hrsh7th/cmp-nvim-lsp-signature-help',
+  'jose-elias-alvarez/null-ls.nvim',
+  'folke/trouble.nvim',
+  'kyazdani42/nvim-web-devicons',
+  'dcampos/nvim-snippy',
+  'dcampos/cmp-snippy',
+}
+require("lazy").setup(plugins, opts)
 
-vim.call('plug#begin', '~/.config/nvim/plugged')
-
-Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-treesitter/nvim-treesitter'
-Plug 'nvim-treesitter/nvim-treesitter-context'
-Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-file-browser.nvim'
-Plug 'muchzill4/telescope-yacp.nvim'
-Plug 'Vimjas/vim-python-pep8-indent'
-Plug 'janko-m/vim-test'
-Plug 'muchzill4/doubletrouble'
-Plug 'pappasam/papercolor-theme-slim'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
-Plug 'jose-elias-alvarez/null-ls.nvim'
-Plug 'folke/trouble.nvim'
-Plug 'kyazdani42/nvim-web-devicons'
-Plug 'dcampos/nvim-snippy'
-Plug 'dcampos/cmp-snippy'
-
-vim.call('plug#end')
 
 function format()
   vim.lsp.buf.format {async = true}
@@ -65,24 +79,27 @@ vim.keymap.set('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.keymap.set('n', '<Leader>ts', ':TestSuite<CR>', opts)
 vim.keymap.set('n', '<Leader>tv', ':TestVisit<CR>', opts)
 vim.keymap.set('n', '<Leader>m', ':lua format()<CR>")', opts)
-vim.keymap.set('n', '<Leader>we', ':TroubleToggle<CR>', opts)
-vim.keymap.set('n', '<Leader>ww', ':TroubleToggle workspace_diagnostics<CR>', opts)
+vim.keymap.set('n', '<Leader>ww', ':TroubleToggle document_diagnostics<CR>', opts)
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
 vim.keymap.set('n', '<Leader>s', ':w<CR>', { noremap = true })
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
 vim.keymap.set('n', '<C-p>', '<C-^>', { noremap = true })
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+vim.keymap.set('n', '<C-k>', '<cmd>cnext<CR>zz')
 
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 
 local on_attach = function(client, bufnr)
   vim.keymap.set('n', '<Leader>gd', ':lua vim.lsp.buf.definition()<CR>', opts)
   vim.keymap.set('n', '<Leader>gh', ':lua vim.lsp.buf.hover()<CR>', opts)
-  vim.keymap.set('n', '<Leader>gr', ':TroubleToggle lsp_references<CR>")', opts)
 end
 
 
 -- Color Scheme
--- vim.api.nvim_command("colorscheme doubletrouble")  
-vim.api.nvim_command("colorscheme PaperColorSlim")  
+vim.api.nvim_command("colorscheme doubletrouble")  
+-- vim.api.nvim_command("colorscheme PaperColorSlim")  
 
 vim.api.nvim_create_user_command(
     'Project',
@@ -109,12 +126,12 @@ telescope.setup {
   extensions = {
     yacp = {
       palette = {
-         { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
-         { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
-         { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
+         { name = "set working dir to current file", cmd = ":cd %:p:h" },
          { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
          { name = "new tab", cmd = ":tabnew"},
-         { name = "set working dir to current file", cmd = ":cd %:p:h" }
+         { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
+         { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
+         { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
       }
     }
   }
@@ -131,7 +148,7 @@ capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 -- Treesitter
 require('nvim-treesitter.configs').setup {
-  ensure_installed = { 'typescript', 'rust', 'python', 'yaml', 'markdown' },
+  ensure_installed = { 'typescript', 'rust', 'python', 'yaml', 'markdown', 'lua'},
   highlight = { enable = true },
   indent = { enable = true },
   textobjects = {
@@ -175,8 +192,12 @@ lspconfig.pyright.setup{
   on_attach = on_attach,
   settings = {
     python = {
-      venvPath = ".venv"
-    }
+      venvPath = ".venv",
+      analysis = {
+        -- mypy does the type checking
+        typeCheckingMode = "off"
+      }
+    },
   }
 }
 
@@ -199,9 +220,9 @@ local ls = require('null-ls')
 ls.setup({
   sources = {
     ls.builtins.diagnostics.mypy,
-    ls.builtins.diagnostics.flake8,
     ls.builtins.formatting.black,
-    ls.builtins.formatting.isort,
+    ls.builtins.diagnostics.ruff,
+    ls.builtins.formatting.ruff,
     ls.builtins.formatting.prettier,
     ls.builtins.diagnostics.golangci_lint,
     ls.builtins.diagnostics.write_good
