@@ -70,10 +70,10 @@ local opts = {noremap=true, silent=true}
 vim.keymap.set('n', '<Leader>ff', ':Telescope find_files<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fg', ':Telescope live_grep<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fb', ':Telescope buffers<CR>', { noremap = true })
-vim.keymap.set('n', '<leader>fr', ':Telescope oldfiles<CR>', { noremap = true})
+vim.keymap.set('n', '<leader>fu', ':Telescope resume<CR>', { noremap = true})
 vim.keymap.set('n', '<Leader>fd', ':Telescope file_browser<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>fh', ':Telescope help_tags<CR>', { noremap = true })
-vim.keymap.set('n', '<Leader>pp', ':Telescope yacp<CR>', { noremap = true })
+vim.keymap.set('n', '<Leader>pp', ':lua require("yacp").yacp()<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>pr', ':Telescope yacp replay<CR>', { noremap = true })
 vim.keymap.set('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.keymap.set('n', '<Leader>ts', ':TestSuite<CR>', opts)
@@ -122,22 +122,21 @@ telescope.load_extension "file_browser"
 
 
 -- Command Line Palette
-telescope.setup {
-  extensions = {
-    yacp = {
-      palette = {
-         { name = "set working dir to current file", cmd = ":cd %:p:h" },
-         { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
-         { name = "new tab", cmd = ":tabnew"},
-         { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
-         { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
-         { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
-      }
-    }
-  }
+require("yacp").setup {
+  provider = "telescope", -- or "fzf"
+  palette = {
+    { name = "help", cmd = "Telescope help_tags" },
+     { name = "set working dir to current file", cmd = ":cd %:p:h" },
+     { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
+     { name = "new tab", cmd = ":tabnew"},
+     { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
+     { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
+     { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
+  },
 }
-telescope.load_extension "yacp"
 
+
+telescope.setup {}
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
