@@ -57,6 +57,7 @@ plugins = {
   'kyazdani42/nvim-web-devicons',
   'dcampos/nvim-snippy',
   'dcampos/cmp-snippy',
+  'tpope/vim-fugitive',
 }
 require("lazy").setup(plugins, opts)
 
@@ -81,12 +82,17 @@ vim.keymap.set('n', '<Leader>tv', ':TestVisit<CR>', opts)
 vim.keymap.set('n', '<Leader>m', ':lua format()<CR>")', opts)
 vim.keymap.set('n', '<Leader>ww', ':TroubleToggle document_diagnostics<CR>', opts)
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
+vim.keymap.set('n', '<Leader>ga', '<cmd>Git add . -p<CR>')
+vim.keymap.set('n', '<Leader>gc', '<cmd>Git diff<CR>')
+vim.keymap.set('n', '<Leader>gb', '<cmd>Git blame<CR>')
+vim.keymap.set('n', '<Leader>gg', '<cmd>Git <CR>')
 vim.keymap.set('n', '<Leader>s', ':w<CR>', { noremap = true })
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
 vim.keymap.set('n', '<C-p>', '<C-^>', { noremap = true })
 vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 vim.keymap.set('n', '<C-k>', '<cmd>cnext<CR>zz')
+
 
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
@@ -120,7 +126,6 @@ vim.g['test#strategy'] = 'neovim'
 local telescope = require("telescope")
 telescope.load_extension "file_browser"
 
-
 -- Command Line Palette
 require("yacp").setup {
   provider = "telescope", -- or "fzf"
@@ -132,11 +137,14 @@ require("yacp").setup {
      { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
      { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
      { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
+     { name = "golangci lint", cmd = "sp | term golangci-lint run --fix"},
+     { name = "git commit", cmd = ":Git commit"},
+     { name = "git push", cmd = ":Git push origin head"},
   },
 }
 
 
-telescope.setup {}
+telescope.setup{}
 
 local ok, lspconfig = pcall(require, "lspconfig")
 
@@ -147,7 +155,15 @@ capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 -- Treesitter
 require('nvim-treesitter.configs').setup {
-  ensure_installed = { 'typescript', 'rust', 'python', 'yaml', 'markdown', 'lua'},
+  ensure_installed = { 'typescript', 'rust', 'python', 'yaml', 'markdown', 'lua', 'go'},
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "v",
+      node_incremental = "v",
+      node_decremental = "V",
+    },
+  },
   highlight = { enable = true },
   indent = { enable = true },
   textobjects = {
@@ -202,10 +218,12 @@ lspconfig.pyright.setup{
 
 -- CSS - cssls (npm i -g vscode-langservers-extracted)
 -- Go - gopls (go install golang.org/x/tools/gopls@latest)
+-- Protobuf - bufls (go install go install github.com/bufbuild/buf-language-server/cmd/bufls@latest)
 -- Typescript - tsserver - (npm install -g typescript typescript-language-server)
 -- Rust - rust_analyzer (brew install rust-analyzer)
+-- TailwindCss - (npm install -g @tailwindcss/language-server)
 
-local servers = {'cssls', 'gopls', 'tsserver', 'rust_analyzer'}
+local servers = {'cssls', 'gopls', 'tsserver', 'rust_analyzer', 'bufls', 'tailwindcss'}
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
