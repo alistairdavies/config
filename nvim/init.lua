@@ -15,7 +15,7 @@ vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.breakindent = true
-vim.opt.background = "light"
+vim.opt.background = "dark"
 vim.opt.scrolloff = 8
 vim.opt.updatetime = 50
 vim.keymap.set("n", "<Space>", "<Nop>")
@@ -49,16 +49,22 @@ plugins = {
   'janko-m/vim-test',
   'muchzill4/doubletrouble',
   'pappasam/papercolor-theme-slim',
-  'hrsh7th/nvim-cmp',
-  'hrsh7th/cmp-nvim-lsp',
-  'hrsh7th/cmp-nvim-lsp-signature-help',
-  'jose-elias-alvarez/null-ls.nvim',
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-nvim-lsp-signature-help",
+      "dcampos/nvim-snippy",
+      "dcampos/cmp-snippy",
+    },
+    config = cmp_config
+  },
   'folke/trouble.nvim',
   'kyazdani42/nvim-web-devicons',
-  'dcampos/nvim-snippy',
-  'dcampos/cmp-snippy',
   'tpope/vim-fugitive',
+  {'nvimdev/guard.nvim', dependencies = {"nvimdev/guard-collection"}},
 }
+
 require("lazy").setup(plugins, opts)
 
 
@@ -79,7 +85,7 @@ vim.keymap.set('n', '<Leader>pr', ':Telescope yacp replay<CR>', { noremap = true
 vim.keymap.set('n', '<Leader>tt', ':TestFile<CR>', opts)
 vim.keymap.set('n', '<Leader>ts', ':TestSuite<CR>', opts)
 vim.keymap.set('n', '<Leader>tv', ':TestVisit<CR>', opts)
-vim.keymap.set('n', '<Leader>m', ':lua format()<CR>")', opts)
+vim.keymap.set('n', '<Leader>m', ':GuardFmt<CR>")', opts)
 vim.keymap.set('n', '<Leader>ww', ':TroubleToggle document_diagnostics<CR>', opts)
 vim.keymap.set('n', '<Leader>o', ':Project<space>', { noremap = true})
 vim.keymap.set('n', '<Leader>ga', '<cmd>Git add . -p<CR>')
@@ -135,9 +141,11 @@ require("yacp").setup {
      { name = "clear buffers", cmd = ":%bd|edit#|bd#"},
      { name = "new tab", cmd = ":tabnew"},
      { name = "open files with conflicts", cmd = "args `git diff --name-only --diff-filter=U`"},
+     { name = "open file browser with hidden files", cmd = ":Telescope file_browser hidden=true"},
      { name = "mypy", cmd = "sp | term pipenv run python -m mypy ."},
      { name = "pre-commit", cmd = "sp | term pre-commit run --all-files"},
      { name = "golangci lint", cmd = "sp | term golangci-lint run --fix"},
+     { name = "npm lint", cmd = "sp | term npm run lint-fix"},
      { name = "git commit", cmd = ":Git commit"},
      { name = "git push", cmd = ":Git push origin head"},
   },
@@ -209,8 +217,8 @@ lspconfig.pyright.setup{
     python = {
       venvPath = ".venv",
       analysis = {
-        -- mypy does the type checking
-        typeCheckingMode = "off"
+        typeCheckingMode = "basic",
+        useLibraryCodeForTypes = true
       }
     },
   }
@@ -231,20 +239,18 @@ for _, lsp in ipairs(servers) do
   }
 end
 
+-- guard formatting
+local ft = require('guard.filetype')
 
--- null-ls
-local ls = require('null-ls')
-ls.setup({
-  sources = {
-    ls.builtins.diagnostics.mypy,
-    ls.builtins.formatting.black,
-    ls.builtins.diagnostics.ruff,
-    ls.builtins.formatting.ruff,
-    ls.builtins.formatting.prettier,
-    ls.builtins.diagnostics.golangci_lint,
-    ls.builtins.diagnostics.write_good
-  },
+ft('typescript,javascript,typescriptreact'):fmt('prettier')
+ft('css,scss,html'):fmt('prettier')
+ft('python'):fmt('black'):append('ruff_fix'):lint('ruff')
+
+require('guard').setup({
+    fmt_on_save = true,
+    lsp_as_default_formatter = true,
 })
+
 
 -- Snippy
 local snippy = require('snippy')
@@ -263,45 +269,50 @@ snippy.setup({
 -- Trouble
 require('trouble').setup{}
 
-local cmp = require'cmp'
-cmp.setup{
-  snippet = {
-    expand = function(args)
-      snippy.expand_snippet(args.body)
-    end,
-  },
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
-    { name = 'buffer' },
-    { name = 'snippy' },
-    { name = 'nvim_lsp_signature_help' },
-  }),
-  mapping = {
-    ["<C-d>"] = cmp.mapping.scroll_docs(-4),
-    ["<C-f>"] = cmp.mapping.scroll_docs(4),
-    ["<C-Space>"] = cmp.mapping.complete(),
-    ["<C-e>"] = cmp.mapping.close(),
-    ["<CR>"] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
+function cmp_config ()
+  local cmp = require('cmp')
+  cmp.setup{
+    snippet = {
+      expand = function(args)
+        snippy.expand_snippet(args.body)
+      end,
     },
-    ["<Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif snippy.can_expand_or_advance() then
-        snippy.expand_or_advance()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-    ["<S-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif snippy.can_jump(-1) then
-        snippy.previous()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'buffer' },
+      { name = 'snippy' },
+      { name = 'nvim_lsp_signature_help' },
+    }),
+    mapping = {
+      ["<C-d>"] = cmp.mapping.scroll_docs(-4),
+      ["<C-f>"] = cmp.mapping.scroll_docs(4),
+      ["<C-Space>"] = cmp.mapping.complete(),
+      ["<C-e>"] = cmp.mapping.close(),
+      ["<CR>"] = cmp.mapping.confirm {
+        behavior = cmp.ConfirmBehavior.Replace,
+        select = true,
+      },
+      ["<Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_next_item()
+        elseif snippy.can_expand_or_advance() then
+          snippy.expand_or_advance()
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+      ["<S-Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_prev_item()
+        elseif snippy.can_jump(-1) then
+          snippy.previous()
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+    }
   }
-}
+end
+
+cmp_config()
+
