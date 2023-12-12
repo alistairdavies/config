@@ -130,6 +130,14 @@ vim.g['test#strategy'] = 'neovim'
 
 -- Telescope file browser
 local telescope = require("telescope")
+telescope.setup {
+  extensions = {
+    file_browser = {
+      display_stat = { date = true },
+      hidden = { file_browser = true, folder_browser = true },
+    }
+  }
+}
 telescope.load_extension "file_browser"
 
 -- Command Line Palette
@@ -229,7 +237,7 @@ lspconfig.pyright.setup{
 -- Protobuf - bufls (go install go install github.com/bufbuild/buf-language-server/cmd/bufls@latest)
 -- Typescript - tsserver - (npm install -g typescript typescript-language-server)
 -- Rust - rust_analyzer (brew install rust-analyzer)
--- TailwindCss - (npm install -g @tailwindcss/language-server)
+-- TailwindCss , (npm install -g @tailwindcss/language-server)
 
 local servers = {'cssls', 'gopls', 'tsserver', 'rust_analyzer', 'bufls', 'tailwindcss'}
 for _, lsp in ipairs(servers) do
@@ -244,7 +252,7 @@ local ft = require('guard.filetype')
 
 ft('typescript,javascript,typescriptreact'):fmt('prettier')
 ft('css,scss,html'):fmt('prettier')
-ft('python'):fmt('black'):append('ruff_fix'):lint('ruff')
+ft('python'):fmt('black'):append('ruff_fix')
 
 require('guard').setup({
     fmt_on_save = true,
