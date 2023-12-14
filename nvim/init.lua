@@ -253,6 +253,7 @@ local ft = require('guard.filetype')
 ft('typescript,javascript,typescriptreact'):fmt('prettier')
 ft('css,scss,html'):fmt('prettier')
 ft('python'):fmt('black'):append('ruff_fix')
+ft('rust'):fmt('rustfmt')
 
 require('guard').setup({
     fmt_on_save = true,
