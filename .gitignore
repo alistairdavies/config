@@ -1,0 +1,16 @@
+# Ignore everything by default
+*
+
+!.gitignore
+
+!/fish/
+!/fish/functions
+!/fish/config.fish
+
+!/kitty/
+!/kitty/kitty.conf
+!/kitty/dark-theme.conf
+!/kitty/latte-theme.conf
+
+!/nvim/
+!/nvim/init.lua

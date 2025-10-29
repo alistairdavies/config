@@ -12,14 +12,15 @@ vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.breakindent = true
-vim.opt.background = "dark"
+vim.opt.background = "light"
 vim.opt.scrolloff = 8
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300
 vim.opt.inccommand = "split"
 vim.opt.cursorline = true
-vim.keymap.set("n", "<Space>", "<Nop>")
 vim.g.mapleader = " "
+vim.keymap.set("n", "<Space>", "<Nop>")
+vim.diagnostic.config({ virtual_text = true })
 
 vim.opt.wildignore = { "*/node_modules/*", "*/static/*", "*/tmp/*", "*/.mypy_cache/*" }
 
@@ -36,7 +37,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-plugins = {
+local plugins = {
 	"neovim/nvim-lspconfig",
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
@@ -48,6 +49,7 @@ plugins = {
 				"python",
 				"yaml",
 				"markdown",
+				"markdown_inline",
 				"lua",
 				"go",
 				"html",
@@ -106,11 +108,19 @@ plugins = {
 	"nvim-lua/plenary.nvim",
 	"Vimjas/vim-python-pep8-indent",
 	"janko-m/vim-test",
+	-- {
+	-- 	"muchzill4/doubletrouble",
+	-- 	priority = 1000, -- Make sure to load this before all the other start plugins.
+	-- 	init = function()
+	-- 		vim.cmd.colorscheme("doubletrouble")
+	-- 	end,
+	-- },
 	{
-		"muchzill4/doubletrouble",
-		priority = 1000, -- Make sure to load this before all the other start plugins.
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
 		init = function()
-			vim.cmd.colorscheme("doubletrouble")
+			vim.cmd.colorscheme("catppuccin")
 		end,
 	},
 	-- "gc" to comment visual regions/lines
@@ -121,7 +131,6 @@ plugins = {
 	{ -- Fuzzy Finder (files, lsp, etc)
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
-		branch = "0.1.x",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-telescope/telescope-file-browser.nvim",
@@ -141,9 +150,11 @@ plugins = {
 						{ name = "mypy", cmd = "sp | term pipenv run python -m mypy ." },
 						{ name = "pre-commit", cmd = "sp | term pre-commit run --all-files" },
 						{ name = "golangci lint", cmd = "sp | term golangci-lint run --fix" },
-						{ name = "npm lint", cmd = "sp | term npm run lint-fix" },
+						{ name = "npm lint", cmd = "sp | term npm run lint-fix -- --cache" },
+						{ name = "npm watch tests", cmd = "sp | term npm run test-watch" },
 						{ name = "git commit", cmd = ":Git commit" },
 						{ name = "git push", cmd = ":Git push origin head" },
+						{ name = "codex", cmd = "sp | term codex" },
 					},
 				},
 			},
@@ -211,7 +222,6 @@ plugins = {
 	},
 	{ -- Autoformat
 		"stevearc/conform.nvim",
-
 		opts = {
 			notify_on_error = false,
 			format_on_save = true,
@@ -220,6 +230,9 @@ plugins = {
 				python = { "black", "ruff_fix", "ruff_format" },
 				rust = { "rustfmt" },
 				javascript = { "prettier" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
+				go = { "gofmt" },
 				["_"] = { "trim_whitespace" },
 			},
 		},
@@ -320,9 +333,9 @@ plugins = {
 			--  - settings (table): Override the default settings passed when initializing the server.
 			--        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 			local servers = {
-				-- gopls = {},
+				gopls = {},
 				cssls = {},
-				tsserver = {},
+				ts_ls = {},
 				rust_analyzer = {},
 				tailwindcss = {},
 				pyright = {
@@ -372,11 +385,22 @@ plugins = {
 			})
 		end,
 	},
+	{
+		"github/copilot.vim",
+		event = "InsertEnter",
+		config = function()
+			vim.g.copilot_no_tab_map = true
+			vim.keymap.set("i", "<C-J>", 'copilot#Accept("\\<CR>")', {
+				expr = true,
+				replace_keycodes = false,
+			})
+		end,
+	},
 }
 
-require("lazy").setup(plugins, opts)
-
+require("lazy").setup(plugins, {})
 local opts = { noremap = true, silent = true }
+
 vim.keymap.set("n", "<Leader>pp", ':lua require("yacp").yacp()<CR>', { noremap = true })
 vim.keymap.set("n", "<Leader>pr", ":Telescope yacp replay<CR>", { noremap = true })
 vim.keymap.set("n", "<Leader>t", ":TestFile<CR>", opts)
@@ -385,7 +409,6 @@ vim.keymap.set("n", "<Leader>tv", ":TestVisit<CR>", opts)
 vim.keymap.set("n", "<Leader>ga", "<cmd>Git add . -p<CR>")
 vim.keymap.set("n", "<Leader>gc", "<cmd>Git diff<CR>")
 vim.keymap.set("n", "<Leader>gb", "<cmd>Git blame<CR>")
-vim.keymap.set("n", "<Leader>s", ":w<CR>", { noremap = true })
 vim.keymap.set("n", "<Leader>d", ":Telescope file_browser<CR>", { noremap = true })
 
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { noremap = true })
