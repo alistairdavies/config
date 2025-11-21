@@ -13,4 +13,4 @@
 !/kitty/latte-theme.conf
 
 !/nvim/
-!/nvim/init.lua
+!/nvim/**

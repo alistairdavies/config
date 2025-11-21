@@ -3,6 +3,8 @@ set -g COMPOSE_DOCKER_CLI_BUILD 1
 status --is-interactive
 
 
+export PATH="$HOME/.local/bin:$PATH"
+
 # make pip explode if attempting to install packages globally
 set -x PIP_REQUIRE_VIRTUALENV 1
 
