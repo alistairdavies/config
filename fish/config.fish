@@ -1,6 +1,6 @@
 set -g DOCKER_BUILDKIT 1
 set -g COMPOSE_DOCKER_CLI_BUILD 1
-status --is-interactive; and source (pyenv init -|psub)
+status --is-interactive
 
 
 # make pip explode if attempting to install packages globally
