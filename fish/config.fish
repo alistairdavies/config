@@ -2,8 +2,13 @@ set -g DOCKER_BUILDKIT 1
 set -g COMPOSE_DOCKER_CLI_BUILD 1
 status --is-interactive
 
+fish_add_path ~/.local/bin
 
-export PATH="$HOME/.local/bin:$PATH"
+if command -q mise
+    mise activate fish | source
+else
+    echo "Warning: mise not found. Install from https://mise.jdx.dev"
+end
 
 # make pip explode if attempting to install packages globally
 set -x PIP_REQUIRE_VIRTUALENV 1
@@ -14,3 +19,4 @@ end
 
 set -x EDITOR nvim
 set -x VISUAL nvim
+
