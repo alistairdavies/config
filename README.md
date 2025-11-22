@@ -1,6 +1,4 @@
-# Config
-
-Configuration files for a consistent development environment.
+Configuration files for my development environment.
 
 ## Quick Setup (macOS)
 
