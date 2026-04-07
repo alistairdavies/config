@@ -5,6 +5,12 @@ set -e
 echo "=== Config Setup Script ==="
 echo ""
 
+OS="$(uname)"
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    echo "Unsupported OS: $OS"
+    exit 1
+fi
+
 # Helper function to ask for confirmation
 confirm() {
     read -p "$1 [y/N] " response
@@ -14,34 +20,48 @@ confirm() {
     esac
 }
 
-# Check if running on macOS
-if [[ "$(uname)" != "Darwin" ]]; then
-    echo "This script is for macOS only."
-    exit 1
-fi
-
-# Homebrew
-echo "Checking for Homebrew..."
-if ! command -v brew &> /dev/null; then
-    echo "Homebrew is not installed."
-    if confirm "Install Homebrew?"; then
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    else
-        echo "Homebrew is required. Exiting."
+# Verify apt is available on Linux (Debian/Ubuntu)
+if [[ "$OS" == "Linux" ]]; then
+    if ! command -v apt-get &> /dev/null; then
+        echo "This script requires apt (Debian/Ubuntu). Exiting."
         exit 1
     fi
-else
-    echo "Homebrew is already installed."
+    echo "Detected Linux (Debian/Ubuntu)"
+    echo ""
 fi
-echo ""
 
-# Fish shell via Homebrew
+pkg_install() {
+    if [[ "$OS" == "Darwin" ]]; then
+        brew install "$@"
+    else
+        sudo apt-get install -y "$@"
+    fi
+}
+
+# Homebrew (macOS only)
+if [[ "$OS" == "Darwin" ]]; then
+    echo "Checking for Homebrew..."
+    if ! command -v brew &> /dev/null; then
+        echo "Homebrew is not installed."
+        if confirm "Install Homebrew?"; then
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        else
+            echo "Homebrew is required. Exiting."
+            exit 1
+        fi
+    else
+        echo "Homebrew is already installed."
+    fi
+    echo ""
+fi
+
+# Fish shell
 echo "Checking for fish..."
-if brew list fish &> /dev/null; then
+if command -v fish &> /dev/null; then
     echo "  fish is already installed."
 else
     echo "  Installing fish..."
-    brew install fish
+    pkg_install fish
 fi
 echo ""
 
@@ -57,13 +77,42 @@ echo ""
 
 # Nerd Font
 echo "Checking for SauceCodePro Nerd Font..."
-if ls ~/Library/Fonts/*SauceCodePro* &> /dev/null || ls /Library/Fonts/*SauceCodePro* &> /dev/null; then
+if [[ "$OS" == "Darwin" ]]; then
+    FONT_INSTALLED=false
+    if ls ~/Library/Fonts/*SauceCodePro* &> /dev/null || ls /Library/Fonts/*SauceCodePro* &> /dev/null; then
+        FONT_INSTALLED=true
+    fi
+else
+    FONT_INSTALLED=false
+    if ls ~/.local/share/fonts/*SauceCodePro* &> /dev/null || ls /usr/share/fonts/*SauceCodePro* &> /dev/null; then
+        FONT_INSTALLED=true
+    fi
+fi
+
+if $FONT_INSTALLED; then
     echo "  Font is already installed."
 else
-    if confirm "Install SauceCodePro Nerd Font via Homebrew?"; then
-        brew install --cask font-sauce-code-pro-nerd-font
+    if [[ "$OS" == "Darwin" ]]; then
+        if confirm "Install SauceCodePro Nerd Font via Homebrew?"; then
+            brew install --cask font-sauce-code-pro-nerd-font
+        else
+            echo "  Skipping font install. Download manually from https://www.nerdfonts.com/font-downloads"
+        fi
     else
-        echo "  Skipping font install. Download manually from https://www.nerdfonts.com/font-downloads"
+        if confirm "Install SauceCodePro Nerd Font?"; then
+            sudo apt-get install -y unzip fontconfig
+            FONT_DIR="$HOME/.local/share/fonts"
+            mkdir -p "$FONT_DIR"
+            TMPDIR=$(mktemp -d)
+            curl -fsSL -o "$TMPDIR/SauceCodePro.zip" \
+                "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/SourceCodePro.zip"
+            unzip -o "$TMPDIR/SauceCodePro.zip" -d "$FONT_DIR"
+            rm -rf "$TMPDIR"
+            fc-cache -fv
+            echo "  Font installed."
+        else
+            echo "  Skipping font install. Download manually from https://www.nerdfonts.com/font-downloads"
+        fi
     fi
 fi
 echo ""
