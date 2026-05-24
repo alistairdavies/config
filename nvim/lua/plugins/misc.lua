@@ -6,7 +6,7 @@ return {
 		"janko-m/vim-test",
 		config = function()
 			vim.g["test#python#runner"] = "pytest"
-			vim.g["test#go#runner"] = "richgo"
+			vim.g["test#go#runner"] = "gotest"
 			vim.g["test#strategy"] = "neovim"
 		end,
 	},
