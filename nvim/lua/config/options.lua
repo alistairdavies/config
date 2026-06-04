@@ -5,7 +5,6 @@ vim.opt.relativenumber = true
 vim.opt.mouse = "a"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
-vim.opt.clipboard = "unnamed"
 vim.opt.termguicolors = true
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
@@ -20,6 +19,9 @@ vim.opt.inccommand = "split"
 vim.opt.cursorline = true
 
 vim.opt.wildignore = { "*/node_modules/*", "*/static/*", "*/tmp/*", "*/.mypy_cache/*" }
+
+-- Avoid overhead of checking for python provider since no plugins require it
+vim.g.loaded_python3_provider = 0
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<Space>", "<Nop>")
