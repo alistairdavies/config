@@ -34,7 +34,6 @@ return {
 			gopls = {},
 			cssls = {},
 			ts_ls = {},
-			rust_analyzer = {},
 			tailwindcss = {},
 			pyright = {
 				settings = {
@@ -65,7 +64,6 @@ return {
 			"stylua",
 			"black",
 			"ruff",
-			"rustfmt",
 			"prettier",
 		})
 		require("mason-tool-installer").setup({ ensure_installed = ensure_installed })

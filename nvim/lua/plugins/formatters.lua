@@ -6,7 +6,6 @@ return {
 		formatters_by_ft = {
 			lua = { "stylua" },
 			python = { "black", "ruff_fix", "ruff_format" },
-			rust = { "rustfmt" },
 			javascript = { "prettier" },
 			typescript = { "prettier" },
 			typescriptreact = { "prettier" },

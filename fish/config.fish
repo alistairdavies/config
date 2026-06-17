@@ -11,7 +11,7 @@ else
 end
 
 # make pip explode if attempting to install packages globally
-set -x PIP_REQUIRE_VIRTUALENV 1
+#set -x PIP_REQUIRE_VIRTUALENV 1
 
 function gpip
   PIP_REQUIRE_VIRTUALENV="" pip $argv
